@@ -48,7 +48,13 @@ function makeBoatVisible (boatArray: Sprite[]) {
 }
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (moveBoatFlag == 3) {
-        isHitOrMiss(boatSpriteArrayP2)
+        if (currentPlayer == "player 1") {
+            isHitOrMiss(boatSpriteArrayP2, hitormissp1)
+            switchPlayer()
+        } else {
+            isHitOrMiss(boatSpriteArrayP1, hitormissp2)
+            switchPlayer()
+        }
     } else {
         currentBoat += 1
         grid.place(cursor, tiles.getTileLocation(0, 0))
@@ -73,11 +79,15 @@ function switchPlayer () {
         for (let boatIterator of boatSpriteArrayP1) {
             makeBoatInvisible(boatIterator)
         }
+        makeBoatInvisible(hitormissp1)
+        makeBoatVisible(hitormissp2)
     } else {
         currentPlayer = "Player1"
         for (let boatIterator2 of boatSpriteArrayP2) {
             makeBoatInvisible(boatIterator2)
         }
+        makeBoatInvisible(hitormissp2)
+        makeBoatVisible(hitormissp1)
     }
 }
 controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -112,7 +122,7 @@ function moveBoat (boatArray: any[], boatRotateArray: string[]) {
         iterator += 1
     }
 }
-function isHitOrMiss (enemyBoats: Sprite[][]) {
+function isHitOrMiss (enemyBoats: Sprite[][], hitOrMissPX: Sprite[]) {
     for (let index = 0; index <= 2; index++) {
         for (let currentBoatSprite3 of enemyBoats[index]) {
             if (grid.spriteCol(currentBoatSprite3) == grid.spriteCol(cursor) && grid.spriteRow(currentBoatSprite3) == grid.spriteRow(cursor)) {
@@ -135,36 +145,242 @@ function isHitOrMiss (enemyBoats: Sprite[][]) {
                     . . . 2 2 4 4 4 4 4 2 2 2 . . . 
                     `, SpriteKind.Projectile)
                 grid.place(boomSprite, grid.getLocation(cursor))
-            } else {
-                boomSprite = sprites.create(img`
-                    . . . . . . . . b b . . . . . . 
-                    . . . . . . . b 9 1 b . . . . . 
-                    . . b b . . . b 9 9 b . . . . . 
-                    . b 9 1 b . . b b b . . b b b . 
-                    . b 3 9 b . b b b b . b 9 9 1 b 
-                    . b b b b b 9 9 1 1 b b 3 9 9 b 
-                    . . . . b 9 d 9 1 1 b b b b b . 
-                    . . . . b 5 3 9 9 9 b . . . . . 
-                    . . b b b 5 3 3 d 9 b . . . . . 
-                    . b 5 1 b b 5 5 9 b b b b . . . 
-                    . b 5 5 b b b b b b 3 9 9 3 . . 
-                    . b b b b b b b . b 9 1 1 9 b . 
-                    . . . b 5 5 1 b . b 9 1 1 9 b . 
-                    . . . b 5 5 5 b . b 3 9 9 3 b . 
-                    . . . . b b b . . . b b b b . . 
-                    . . . . . . . . . . . . . . . . 
-                    `, SpriteKind.Projectile)
-                grid.place(boomSprite, grid.getLocation(cursor))
+                hitOrMissPX.push(boomSprite)
+                game.splash("" + currentPlayer + "HIT!")
+                return 1
             }
         }
     }
+    boomSprite = sprites.create(img`
+        . . . . . . . . b b . . . . . . 
+        . . . . . . . b 9 1 b . . . . . 
+        . . b b . . . b 9 9 b . . . . . 
+        . b 9 1 b . . b b b . . b b b . 
+        . b 3 9 b . b b b b . b 9 9 1 b 
+        . b b b b b 9 9 1 1 b b 3 9 9 b 
+        . . . . b 9 d 9 1 1 b b b b b . 
+        . . . . b 5 3 9 9 9 b . . . . . 
+        . . b b b 5 3 3 d 9 b . . . . . 
+        . b 5 1 b b 5 5 9 b b b b . . . 
+        . b 5 5 b b b b b b 3 9 9 3 . . 
+        . b b b b b b b . b 9 1 1 9 b . 
+        . . . b 5 5 1 b . b 9 1 1 9 b . 
+        . . . b 5 5 5 b . b 3 9 9 3 b . 
+        . . . . b b b . . . b b b b . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Projectile)
+    grid.place(boomSprite, grid.getLocation(cursor))
+    hitOrMissPX.push(boomSprite)
+    game.splash("MISS!!!!!!!")
+    return 0
 }
 controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
     rotateFlag = "nothing"
     grid.move(cursor, 0, 1)
     grid.place(shadowCursor, tiles.getTileLocation(grid.spriteCol(cursor), grid.spriteRow(cursor) + -1))
 })
+function initP1 () {
+    boatRotateArrayP1 = ["up", "up", "up"]
+    boatSpriteArrayP1 = [[sprites.create(img`
+        . . . . . b b b b b b . . . . . 
+        . . . b b 9 9 9 9 9 9 b b . . . 
+        . . b b 9 9 9 9 9 9 9 9 b b . . 
+        . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+        . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+        b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+        b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+        b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+        b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+        . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+        . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+        . . b d 5 d 3 3 3 3 5 5 b b . . 
+        . . . b b 5 5 5 5 5 5 b b . . . 
+        . . . . . b b b b b b . . . . . 
+        `, SpriteKind.Boat0), sprites.create(img`
+        . . . . . b b b b b b . . . . . 
+        . . . b b 9 9 9 9 9 9 b b . . . 
+        . . b b 9 9 9 9 9 9 9 9 b b . . 
+        . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+        . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+        b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+        b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+        b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+        b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+        . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+        . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+        . . b d 5 d 3 3 3 3 5 5 b b . . 
+        . . . b b 5 5 5 5 5 5 b b . . . 
+        . . . . . b b b b b b . . . . . 
+        `, SpriteKind.Boat0)], [sprites.create(img`
+        . . . . . b b b b b b . . . . . 
+        . . . b b 9 9 9 9 9 9 b b . . . 
+        . . b b 9 9 9 9 9 9 9 9 b b . . 
+        . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+        . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+        b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+        b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+        b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+        b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+        . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+        . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+        . . b d 5 d 3 3 3 3 5 5 b b . . 
+        . . . b b 5 5 5 5 5 5 b b . . . 
+        . . . . . b b b b b b . . . . . 
+        `, SpriteKind.Boat1), sprites.create(img`
+        . . . . . b b b b b b . . . . . 
+        . . . b b 9 9 9 9 9 9 b b . . . 
+        . . b b 9 9 9 9 9 9 9 9 b b . . 
+        . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+        . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+        b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+        b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+        b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+        b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+        . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+        . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+        . . b d 5 d 3 3 3 3 5 5 b b . . 
+        . . . b b 5 5 5 5 5 5 b b . . . 
+        . . . . . b b b b b b . . . . . 
+        `, SpriteKind.Boat1), sprites.create(img`
+        . . . . . b b b b b b . . . . . 
+        . . . b b 9 9 9 9 9 9 b b . . . 
+        . . b b 9 9 9 9 9 9 9 9 b b . . 
+        . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+        . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+        b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+        b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+        b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+        b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+        . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+        . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+        . . b d 5 d 3 3 3 3 5 5 b b . . 
+        . . . b b 5 5 5 5 5 5 b b . . . 
+        . . . . . b b b b b b . . . . . 
+        `, SpriteKind.Boat1)], [
+    sprites.create(img`
+        . . . . . b b b b b b . . . . . 
+        . . . b b 9 9 9 9 9 9 b b . . . 
+        . . b b 9 9 9 9 9 9 9 9 b b . . 
+        . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+        . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+        b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+        b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+        b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+        b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+        . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+        . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+        . . b d 5 d 3 3 3 3 5 5 b b . . 
+        . . . b b 5 5 5 5 5 5 b b . . . 
+        . . . . . b b b b b b . . . . . 
+        `, SpriteKind.Boat2),
+    sprites.create(img`
+        . . . . . b b b b b b . . . . . 
+        . . . b b 9 9 9 9 9 9 b b . . . 
+        . . b b 9 9 9 9 9 9 9 9 b b . . 
+        . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+        . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+        b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+        b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+        b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+        b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+        . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+        . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+        . . b d 5 d 3 3 3 3 5 5 b b . . 
+        . . . b b 5 5 5 5 5 5 b b . . . 
+        . . . . . b b b b b b . . . . . 
+        `, SpriteKind.Boat2),
+    sprites.create(img`
+        . . . . . b b b b b b . . . . . 
+        . . . b b 9 9 9 9 9 9 b b . . . 
+        . . b b 9 9 9 9 9 9 9 9 b b . . 
+        . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+        . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+        b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+        b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+        b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+        b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+        . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+        . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+        . . b d 5 d 3 3 3 3 5 5 b b . . 
+        . . . b b 5 5 5 5 5 5 b b . . . 
+        . . . . . b b b b b b . . . . . 
+        `, SpriteKind.Boat2),
+    sprites.create(img`
+        . . . . . b b b b b b . . . . . 
+        . . . b b 9 9 9 9 9 9 b b . . . 
+        . . b b 9 9 9 9 9 9 9 9 b b . . 
+        . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+        . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+        b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+        b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+        b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+        b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+        b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+        . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+        . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+        . . b d 5 d 3 3 3 3 5 5 b b . . 
+        . . . b b 5 5 5 5 5 5 b b . . . 
+        . . . . . b b b b b b . . . . . 
+        `, SpriteKind.Boat2)
+    ]]
+    for (let boatIterator4 of boatSpriteArrayP1) {
+        makeBoatInvisible(boatIterator4)
+    }
+    hitormissp1 = [sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Projectile)]
+}
 function initP2 () {
+    hitormissp2 = [sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Projectile)]
     boatSpriteArrayP2 = [[sprites.create(img`
         . . . . . . . . . . . . . . . . 
         . . f f f f f f . f f f f f f . 
@@ -355,184 +571,24 @@ function isOverlapping (boatSpriteArrayPX: Sprite[][]) {
 }
 let boomSprite: Sprite = null
 let iterator = 0
+let hitormissp2: Sprite[] = []
+let hitormissp1: Sprite[] = []
 let boatRotateArrayP2: string[] = []
 let boatSpriteArrayP2: Sprite[][] = []
+let boatRotateArrayP1: string[] = []
+let boatSpriteArrayP1: Sprite[][] = []
 let shadowCursor: Sprite = null
 let cursor: Sprite = null
 let moveBoatFlag = 0
-let boatSpriteArrayP1: Sprite[][] = []
-let boatRotateArrayP1: string[] = []
 let currentBoat = 0
 let rotateFlag = ""
 let currentPlayer = ""
 tiles.setCurrentTilemap(tilemap`level1`)
 currentPlayer = "Player1"
+initP1()
 initP2()
 rotateFlag = "nothing"
 currentBoat = 0
-boatRotateArrayP1 = ["up", "up", "up"]
-boatSpriteArrayP1 = [[sprites.create(img`
-    . . . . . b b b b b b . . . . . 
-    . . . b b 9 9 9 9 9 9 b b . . . 
-    . . b b 9 9 9 9 9 9 9 9 b b . . 
-    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
-    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
-    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
-    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
-    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
-    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
-    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
-    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
-    . . b d 5 d 3 3 3 3 5 5 b b . . 
-    . . . b b 5 5 5 5 5 5 b b . . . 
-    . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Boat0), sprites.create(img`
-    . . . . . b b b b b b . . . . . 
-    . . . b b 9 9 9 9 9 9 b b . . . 
-    . . b b 9 9 9 9 9 9 9 9 b b . . 
-    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
-    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
-    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
-    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
-    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
-    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
-    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
-    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
-    . . b d 5 d 3 3 3 3 5 5 b b . . 
-    . . . b b 5 5 5 5 5 5 b b . . . 
-    . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Boat0)], [sprites.create(img`
-    . . . . . b b b b b b . . . . . 
-    . . . b b 9 9 9 9 9 9 b b . . . 
-    . . b b 9 9 9 9 9 9 9 9 b b . . 
-    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
-    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
-    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
-    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
-    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
-    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
-    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
-    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
-    . . b d 5 d 3 3 3 3 5 5 b b . . 
-    . . . b b 5 5 5 5 5 5 b b . . . 
-    . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Boat1), sprites.create(img`
-    . . . . . b b b b b b . . . . . 
-    . . . b b 9 9 9 9 9 9 b b . . . 
-    . . b b 9 9 9 9 9 9 9 9 b b . . 
-    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
-    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
-    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
-    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
-    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
-    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
-    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
-    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
-    . . b d 5 d 3 3 3 3 5 5 b b . . 
-    . . . b b 5 5 5 5 5 5 b b . . . 
-    . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Boat1), sprites.create(img`
-    . . . . . b b b b b b . . . . . 
-    . . . b b 9 9 9 9 9 9 b b . . . 
-    . . b b 9 9 9 9 9 9 9 9 b b . . 
-    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
-    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
-    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
-    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
-    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
-    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
-    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
-    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
-    . . b d 5 d 3 3 3 3 5 5 b b . . 
-    . . . b b 5 5 5 5 5 5 b b . . . 
-    . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Boat1)], [
-sprites.create(img`
-    . . . . . b b b b b b . . . . . 
-    . . . b b 9 9 9 9 9 9 b b . . . 
-    . . b b 9 9 9 9 9 9 9 9 b b . . 
-    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
-    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
-    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
-    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
-    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
-    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
-    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
-    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
-    . . b d 5 d 3 3 3 3 5 5 b b . . 
-    . . . b b 5 5 5 5 5 5 b b . . . 
-    . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Boat2),
-sprites.create(img`
-    . . . . . b b b b b b . . . . . 
-    . . . b b 9 9 9 9 9 9 b b . . . 
-    . . b b 9 9 9 9 9 9 9 9 b b . . 
-    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
-    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
-    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
-    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
-    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
-    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
-    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
-    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
-    . . b d 5 d 3 3 3 3 5 5 b b . . 
-    . . . b b 5 5 5 5 5 5 b b . . . 
-    . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Boat2),
-sprites.create(img`
-    . . . . . b b b b b b . . . . . 
-    . . . b b 9 9 9 9 9 9 b b . . . 
-    . . b b 9 9 9 9 9 9 9 9 b b . . 
-    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
-    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
-    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
-    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
-    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
-    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
-    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
-    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
-    . . b d 5 d 3 3 3 3 5 5 b b . . 
-    . . . b b 5 5 5 5 5 5 b b . . . 
-    . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Boat2),
-sprites.create(img`
-    . . . . . b b b b b b . . . . . 
-    . . . b b 9 9 9 9 9 9 b b . . . 
-    . . b b 9 9 9 9 9 9 9 9 b b . . 
-    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
-    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
-    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
-    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
-    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
-    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
-    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
-    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
-    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
-    . . b d 5 d 3 3 3 3 5 5 b b . . 
-    . . . b b 5 5 5 5 5 5 b b . . . 
-    . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Boat2)
-]]
-for (let boatIterator4 of boatSpriteArrayP1) {
-    makeBoatInvisible(boatIterator4)
-}
 moveBoatFlag = 1
 cursor = sprites.create(img`
     3 3 3 3 3 . . . . . . 3 3 3 3 3 
